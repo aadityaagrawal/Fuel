@@ -17,6 +17,7 @@ class ProfileScreen extends StatelessWidget {
         centerTitle: true,
         title: const Text('Profile'),
       ),
+      drawer: DrawerWidget(),
       body: FutureBuilder<UserModel>(
         future: userData.getUser(uid),
         builder: (context, snapshot) {
@@ -54,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            user.name,
+            "${user.first_name} ${user.second_name}",
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,

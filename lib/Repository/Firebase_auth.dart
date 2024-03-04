@@ -24,14 +24,20 @@ class AuthService {
       return user;
     } catch (error) {
       print(error.toString());
-      return null;
+      return error.toString();
     }
   }
 
   // Email Verification
-  Future sendEmailVerification() async {
+  Future<void> sendEmailVerification() async {
     User? user = _auth.currentUser;
+    try{
     await user?.sendEmailVerification();
+    }
+    catch(e)
+    {
+        throw e;
+    }
   }
 
   // Mobile Number Verification

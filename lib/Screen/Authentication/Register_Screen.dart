@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fuel/Repository/Firebase_auth.dart';
 import 'package:fuel/Repository/user_data.dart';
-import 'package:fuel/Screen/Login_Screen.dart';
+import 'package:fuel/Screen/Authentication/Login_Screen.dart';
+import 'package:fuel/Screen/Authentication/verify_email.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -25,10 +27,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
-  final AuthService _auth = AuthService();
   bool agreeToTerms = true;
   String defaultPropertyType = 'Residential';
   UserData userData = UserData();
+  final FirebaseAuth auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -217,38 +219,55 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     if (_formKey.currentState?.validate() == true &&
                         agreeToTerms) {
                       try {
-                       
-                       await _auth.registerWithEmailAndPassword(
-                            emailController.text, passwordController.text);
+                        User? user = (await auth.createUserWithEmailAndPassword(
+                          email: emailController.text,
+                          password: passwordController.text,
+                        ))
+                            .user;
 
-                      _auth.sendEmailVerification();
-                        await userData.addUser(
+                        if (user != null) {
+                          if (!auth.currentUser!.emailVerified) {
+                            await auth.currentUser!.sendEmailVerification();
+                          }
+
+                          await userData.addUser(
                             context,
-                            _auth.getCurrentUser()!.uid,
+                            auth.currentUser!.uid,
                             firstNameController.text,
-                            phoneNumberController.text, {
-                          'building': buildingNameController.text,
-                          'street': streetController.text,
-                          'type': propertyTypeController.text,
-                          'state': stateController.text,
-                          'city': cityController.text,
-                          'pincode': pincodeController.text,
-                        });
+                            lastNameController.text,
+                            phoneNumberController.text,
+                            {
+                              'building': buildingNameController.text,
+                              'street': streetController.text,
+                              'type': propertyTypeController.text,
+                              'state': stateController.text,
+                              'city': cityController.text,
+                              'pincode': pincodeController.text,
+                            },
+                          );
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("User added sucessfully"),
-                            duration: const Duration(seconds: 2),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
+                        Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => VerifyEmail()),
+                    );
+                        }
                       } catch (error) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Error adding user: $error'),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
+                        if (error is FirebaseAuthException) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(error.message!),
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.error,
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error adding user: $error'),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
                       }
                     }
                   },

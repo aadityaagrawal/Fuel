@@ -14,21 +14,22 @@ class UserData {
             userSnapshot.data() as Map<String, dynamic>;
         return UserModel.fromJson(userData);
       } else {
-        return UserModel("null", "null", Address("null", "null", "null", "null", "null", "null"));
+        return UserModel("null", "null", "null", Address("null", "null", "null", "null", "null", "null"));
       }
     } catch (error) {
       // Handle the error appropriately, e.g., log or throw it
-     return UserModel("null", "null", Address("null", "null", "null", "null", "null", "null"));
+     return UserModel("null", "null", "null", Address("null", "null", "null", "null", "null", "null"));
     }
   }
 
-  Future<void> addUser(BuildContext context, String uid, String name, String phoneNumber, Map<String, dynamic> address) async {
+  Future<void> addUser(BuildContext context, String uid, String first_name, String second_name, String phoneNumber, Map<String, dynamic> address) async {
   try {
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     DocumentReference userRef = firestore.collection('users').doc(uid);
     Map<String, dynamic> userData = {
-      'name': name,
+      'first_name': first_name,
+      'second_name': second_name,
       'phone_number': phoneNumber,
       'address': address,
     };

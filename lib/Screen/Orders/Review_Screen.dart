@@ -1,26 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:fuel/Models/Booking_Model.dart';
+import 'package:fuel/Repository/order_data.dart';
+import 'package:fuel/Screen/Orders/Order_Confirmed.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
-class ReviewScreen extends StatelessWidget {
+class ReviewScreen extends StatefulWidget {
+  final LatLng deliveryCordinates;
   final String type, quantity, time;
   final DateTime date;
   final int price;
-  int deliveryPrice = 2400;
+  final int deliveryPrice;
 
-  ReviewScreen({
+  const ReviewScreen({
     Key? key,
     required this.type,
     required this.quantity,
     required this.date,
     required this.time,
     required this.price,
+    required this.deliveryCordinates,
+    required this.deliveryPrice,
   }) : super(key: key);
+
+  @override
+  State<ReviewScreen> createState() => _ReviewScreenState();
+}
+
+class _ReviewScreenState extends State<ReviewScreen> {
+  OrderService orderService = OrderService();
 
   TextStyle customStyle = const TextStyle(
     fontSize: 30,
     fontWeight: FontWeight.bold,
     color: Colors.black,
   );
+
   TextStyle headingCustomStyle = const TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.bold,
@@ -46,27 +61,32 @@ class ReviewScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildInfoColumn("Type of fuel", type),
+                    _buildInfoColumn("Type of fuel", widget.type),
                     const SizedBox(height: 124),
-                    _buildInfoColumn("Quantity", quantity),
+                    _buildInfoColumn("Quantity", widget.quantity),
                   ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildInfoColumn(
-                      "Date",
-                      DateFormat('dd - MM - yyyy').format(date),
+                    Expanded(
+                      child: _buildInfoColumn(
+                        "Date",
+                        DateFormat('dd-MM-yy').format(widget.date),
+                      ),
                     ),
-                    _buildInfoColumn("Time", time),
+                    Expanded(child: _buildInfoColumn("Time", widget.time)),
                   ],
                 ),
                 const SizedBox(height: 24),
                 _buildDivider(),
                 const SizedBox(height: 8),
-                _buildPriceRow("Fuel price", quantity, price.toDouble()),
-                _buildPriceRow("Std. Delivery Fee", null, deliveryPrice.toDouble()),
-                _buildPriceRow("Gst on Delivery Fee", null, deliveryPrice * 0.18),
+                _buildPriceRow(
+                    "Fuel price", widget.quantity, widget.price.toDouble()),
+                _buildPriceRow(
+                    "Std. Delivery Fee", null, widget.deliveryPrice.toDouble()),
+                _buildPriceRow(
+                    "Gst on Delivery Fee", null, widget.deliveryPrice * 0.18),
                 const SizedBox(height: 4),
                 _buildDivider(),
                 const SizedBox(height: 8),
@@ -126,7 +146,8 @@ class ReviewScreen extends StatelessWidget {
   }
 
   Widget _buildTotalRow() {
-    double total = 1.18 * deliveryPrice + int.parse(quantity) * price;
+    double total =
+        1.18 * widget.deliveryPrice + int.parse(widget.quantity) * widget.price;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -136,7 +157,8 @@ class ReviewScreen extends StatelessWidget {
         ),
         Text(
           "₹ $total",
-          style: headingCustomStyle.copyWith(fontSize: 28 , fontWeight: FontWeight.bold),
+          style: headingCustomStyle.copyWith(
+              fontSize: 28, fontWeight: FontWeight.bold),
         )
       ],
     );
@@ -144,7 +166,32 @@ class ReviewScreen extends StatelessWidget {
 
   Widget _buildConfirmButton() {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: () {
+        orderService
+            .addOrderToUser(
+                BookingModel(
+                    deliveryCoordinates: widget.deliveryCordinates,
+                    type: widget.type,
+                    quantity: widget.quantity,
+                    time: widget.time,
+                    date: widget.date,
+                    price: widget.price,
+                    deliveryPrice: widget.deliveryPrice),
+                context)
+            .then((result) {
+          // Navigate to the new screen upon success
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SucessfullOrder(),
+            ),
+          );
+        }).catchError((error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.toString())),
+          );
+        });
+      },
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.all(12),
         shape: RoundedRectangleBorder(

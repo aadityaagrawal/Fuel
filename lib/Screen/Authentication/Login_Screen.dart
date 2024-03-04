@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fuel/Repository/Firebase_auth.dart';
-import 'package:fuel/Screen/Register_Screen.dart';
-import 'package:fuel/Screen/homepage.dart';
+import 'package:fuel/Screen/Authentication/Register_Screen.dart';
+import 'package:fuel/Screen/User/homepage.dart';
+import 'package:fuel/Screen/Authentication/verify_email.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,23 +12,21 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
   final AuthService _auth = AuthService();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
   bool _isValidEmail(String email) {
     // Use a regular expression to check if the email is valid
-    final emailRegex = RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    final emailRegex =
+        RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     return emailRegex.hasMatch(email);
   }
-
 
   TextStyle customStyle = const TextStyle(color: Colors.black);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -43,7 +42,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-
             const SizedBox(height: 80.0),
             TextField(
               controller: emailController,
@@ -58,36 +56,31 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () async {
-            
                 var result = await _auth.signInWithEmailAndPassword(
-                emailController.text,
-                passwordController.text,
-              );
-              if (result != null) {
-                // Check if email is verified
-                if (_auth.getCurrentUser()?.emailVerified ?? false) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
-                  );
+                  emailController.text,
+                  passwordController.text,
+                );
+                if (result != null) {
+                  if (_auth.getCurrentUser()!.emailVerified) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                    );
+                  } else {
+                    await _auth.sendEmailVerification();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => VerifyEmail()),
+                    );
+                  }
                 } else {
-                  // If email is not verified, send verification email
-                  await _auth.sendEmailVerification();
-                  // Provide feedback to the user
+                  // Authentication failed
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Please verify your email address'),
+                      content: Text('Invalid email or password'),
                     ),
                   );
                 }
-              } else {
-                // Authentication failed
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Invalid email or password'),
-                  ),
-                );
-              }
               },
               style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(12),
@@ -118,18 +111,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       );
                     }
-                    
                   },
-                  child:  Text('Forgot Password?', style: customStyle,),
+                  child: Text(
+                    'Forgot Password?',
+                    style: customStyle,
+                  ),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) =>  const RegistrationPage()),
-                  );
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const RegistrationPage()),
+                    );
                   },
-                  child:  Text('New User?', style: customStyle,),
+                  child: Text(
+                    'New User?',
+                    style: customStyle,
+                  ),
                 ),
               ],
             ),

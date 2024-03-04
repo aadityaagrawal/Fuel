@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:fuel/Screen/Booking_Screen.dart';
-import 'package:fuel/Screen/Splash_Screen.dart';
+import 'package:fuel/Screen/Orders/Booking_Screen.dart';
+import 'package:fuel/Screen/Orders/Order_Confirmed.dart';
+import 'package:fuel/Screen/User/Splash_Screen.dart';
 
 
 void main() async {
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen (),
+      home: SplashScreen(),
     );
   }
 }

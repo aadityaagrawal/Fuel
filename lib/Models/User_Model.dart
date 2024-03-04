@@ -1,21 +1,23 @@
 class UserModel {
-  final String name;
+  final String first_name, second_name;
   final String phoneNumber;
   final Address address;
 
-  UserModel(this.name, this.phoneNumber, this.address);
+  UserModel(this.first_name, this.second_name , this.phoneNumber, this.address );
 
   factory UserModel.fromJson(Map<String, dynamic> userDetail) {
     return UserModel(
-      userDetail['name'],
+      userDetail['first_name'],
+      userDetail['second_name'],
       userDetail['phone_number'],
-      Address.fromJson(userDetail['address']),
+      Address.fromJson(userDetail['address'],),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
+      'first_name': first_name,
+      'second_name': second_name,
       'phone_number': phoneNumber,
       'address': address.toJson(),
     };

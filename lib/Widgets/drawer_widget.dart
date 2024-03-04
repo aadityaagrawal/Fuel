@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fuel/Repository/Firebase_auth.dart';
-import 'package:fuel/Screen/Complaint_Screen.dart';
-import 'package:fuel/Screen/Contact_us.dart';
-import 'package:fuel/Screen/Login_Screen.dart';
-import 'package:fuel/Screen/faq_screen.dart';
-import 'package:fuel/Screen/homepage.dart';
-import 'package:fuel/Screen/profile_screen.dart';
+import 'package:fuel/Screen/Support/Complaint_Screen.dart';
+import 'package:fuel/Screen/Support/Contact_us.dart';
+import 'package:fuel/Screen/Authentication/Login_Screen.dart';
+import 'package:fuel/Screen/Support/faq_screen.dart';
+import 'package:fuel/Screen/User/homepage.dart';
+import 'package:fuel/Screen/User/profile_screen.dart';
 
 class DrawerWidget extends StatelessWidget {
   DrawerWidget({
