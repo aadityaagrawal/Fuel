@@ -49,7 +49,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
         centerTitle: true,
         elevation: 0,
       ),
-      drawer:  DrawerWidget(),
+      drawer: DrawerWidget(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -60,7 +60,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
-                color:  Color(0xFF4F6F52),
+                color: Color(0xFF4F6F52),
               ),
             ),
             const SizedBox(height: 20),
@@ -129,7 +129,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                primary: const Color(0xFF4F6F52),
+                backgroundColor: const Color(0xFF4F6F52),
               ),
               child: const Text(
                 'Submit',

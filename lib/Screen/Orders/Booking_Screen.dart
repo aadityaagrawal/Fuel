@@ -18,37 +18,33 @@ class OrderScreen extends StatefulWidget {
 class _OrderScreenState extends State<OrderScreen> {
   int? petrolPrice;
   int? dieselPrice;
-  int? deliveryCharge ;
+  int? deliveryCharge;
   int? petrolOrigioanl;
   int? dieselOrigional;
   String selectedFuel = 'Petrol';
   TextEditingController quantityController = TextEditingController();
   DateTime selectedDate = DateTime.now();
 
-
-
   final CollectionReference ordersCollection =
       FirebaseFirestore.instance.collection('prices');
 
-Future<void> fetchPrices() async {
-  try {
+  Future<void> fetchPrices() async {
+    try {
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('prices').get();
+      querySnapshot.docs.forEach((doc) {
+        deliveryCharge = doc['delivery_charge'];
+        dieselPrice = doc['diesel_price'];
+        petrolPrice = doc['petrol_price'];
+        petrolOrigioanl = doc['petrol_origional'];
+        dieselOrigional = doc['diesel_origional'];
 
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('prices').get();
-    querySnapshot.docs.forEach((doc) {
-      deliveryCharge = doc['delivery_charge'];
-      dieselPrice = doc['diesel_price'];
-      petrolPrice = doc['petrol_price'];
-      petrolOrigioanl = doc['petrol_origional'];
-      dieselOrigional = doc['diesel_origional'];
-
-
-      print(dieselOrigional.toString()  + petrolOrigioanl.toString());
-    });
-  } catch (e) {
-    print(e.toString());
+        print(dieselOrigional.toString() + petrolOrigioanl.toString());
+      });
+    } catch (e) {
+      print(e.toString());
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -58,65 +54,66 @@ Future<void> fetchPrices() async {
         title: const Text("FuelZapp"),
       ),
       body: FutureBuilder(
-        future: fetchPrices(),
-        builder: (context, snapshot) {
-          if(snapshot.connectionState == ConnectionState.waiting){
-            return const Center(child: CircularProgressIndicator(),);
-          }
-          else if(snapshot.hasError) {
-              return  Center(child: Text(snapshot.hasError.toString()),);
-          }
-          else {
-          return Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Row(
+          future: fetchPrices(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(snapshot.hasError.toString()),
+              );
+            } else {
+              return Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
                   children: [
-                    PriceDisplay(
-                        type: "Petrol",
-                        netprice: petrolPrice.toString(),
-                        price: petrolOrigioanl.toString()),
-                    PriceDisplay(
-                        type: "Diesel",
-                        netprice: dieselPrice.toString(),
-                        price: dieselOrigional.toString()),
+                    Row(
+                      children: [
+                        PriceDisplay(
+                            type: "Petrol",
+                            netprice: petrolPrice.toString(),
+                            price: petrolOrigioanl.toString()),
+                        PriceDisplay(
+                            type: "Diesel",
+                            netprice: dieselPrice.toString(),
+                            price: dieselOrigional.toString()),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 16,
+                    ),
+                    buildFuelTypeRow(),
+                    const SizedBox(
+                      height: 16,
+                    ),
+                    buildQuantityAndDateRow(),
+                    const Spacer(),
+                    ElevatedButton(
+                      onPressed: () => submitOrder(context,
+                          selectedFuel == 'Petrol' ? petrolPrice : dieselPrice),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        backgroundColor: const Color(0xFF4F6F52),
+                        minimumSize: Size(
+                          MediaQuery.sizeOf(context).width,
+                          40,
+                        ),
+                      ),
+                      child: const Text(
+                        "Submit",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(
-                  height: 16,
-                ),
-                buildFuelTypeRow(),
-                const SizedBox(
-                  height: 16,
-                ),
-                buildQuantityAndDateRow(),
-                const Spacer(),
-                ElevatedButton(
-                  onPressed: () => submitOrder(context,
-                      selectedFuel == 'Petrol' ? petrolPrice : dieselPrice),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.all(12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    backgroundColor: const Color(0xFF4F6F52),
-                    minimumSize: Size(
-                      MediaQuery.sizeOf(context).width,
-                      40,
-                    ),
-                  ),
-                  child: const Text(
-                    "Submit",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ),
-              ],
-            ),
-          );
-          }
-        }
-      ),
+              );
+            }
+          }),
     );
   }
 
@@ -187,7 +184,7 @@ Future<void> fetchPrices() async {
     );
   }
 
-TimeOfDay selectedTime = TimeOfDay.now();
+  TimeOfDay selectedTime = TimeOfDay.now();
 
   Future<void> _selectDateAndTime(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(

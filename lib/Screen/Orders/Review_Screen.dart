@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:fuel/Models/Booking_Model.dart';
 import 'package:fuel/Repository/order_data.dart';
 import 'package:fuel/Screen/Orders/Order_Confirmed.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ReviewScreen extends StatefulWidget {
   final LatLng deliveryCordinates;
@@ -29,6 +32,68 @@ class ReviewScreen extends StatefulWidget {
 
 class _ReviewScreenState extends State<ReviewScreen> {
   OrderService orderService = OrderService();
+
+  late Razorpay razorpay;
+
+  void openCheckOut(int amount) async {
+    amount = amount * 100;
+    Map<String, dynamic> options = {
+      'key': dotenv.env['KEY'],
+      'amount': amount.toInt(),
+      'name': dotenv.env['NAME'],
+      'description': dotenv.env['DESCRIPTION'],
+      'retry': {'enabled': true, 'max_count': 1},
+      'send_sms_hash': true,
+      'prefill': {
+        'contact': dotenv.env['CONTACT'],
+        'email': dotenv.env['EMAIL']
+      },
+      'external': {
+        'wallets': ['paytm']
+      }
+    };
+    try {
+      razorpay.open(options);
+    } catch (e) {
+      debugPrint('Error : $e');
+    }
+  }
+
+  void handlePayementSuccess(PaymentSuccessResponse response) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SucessfullOrder(),
+      ),
+    );
+  }
+
+  void handlePayementError(PaymentFailureResponse response) {
+    Fluttertoast.showToast(
+        msg: "Payement Failed ${response.message!}",
+        toastLength: Toast.LENGTH_SHORT);
+  }
+
+  void handleExternalWallet(ExternalWalletResponse response) {
+    Fluttertoast.showToast(
+        msg: "External wallet ${response.walletName!}",
+        toastLength: Toast.LENGTH_SHORT);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    razorpay.clear();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    razorpay = Razorpay();
+    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePayementSuccess);
+    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePayementError);
+    razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWallet);
+  }
 
   TextStyle customStyle = const TextStyle(
     fontSize: 30,
@@ -92,7 +157,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 const SizedBox(height: 8),
                 _buildTotalRow(),
                 const Spacer(),
-                _buildConfirmButton(),
+                _buildConfirmButton(1.18 * widget.deliveryPrice +
+                    int.parse(widget.quantity) * widget.price),
               ],
             ),
           ),
@@ -164,7 +230,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     );
   }
 
-  Widget _buildConfirmButton() {
+  Widget _buildConfirmButton(double amount) {
     return ElevatedButton(
       onPressed: () {
         orderService
@@ -179,13 +245,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     deliveryPrice: widget.deliveryPrice),
                 context)
             .then((result) {
-          // Navigate to the new screen upon success
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const SucessfullOrder(),
-            ),
-          );
+          openCheckOut(amount.toInt());
         }).catchError((error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(error.toString())),

@@ -1,14 +1,8 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:fuel/Screen/User/homepage.dart';
-
 
 class SucessfullOrder extends StatefulWidget {
   const SucessfullOrder({Key? key}) : super(key: key);
-
-
   @override
   State<SucessfullOrder> createState() => _SucessfullOrderState();
 }
@@ -33,7 +27,7 @@ class _SucessfullOrderState extends State<SucessfullOrder> {
           children: <Widget>[
             Container(
               height: 170,
-              padding: EdgeInsets.all(35),
+              padding: const EdgeInsets.all(35),
               decoration: BoxDecoration(
                 color: themeColor,
                 shape: BoxShape.circle,
@@ -53,7 +47,7 @@ class _SucessfullOrderState extends State<SucessfullOrder> {
               ),
             ),
             SizedBox(height: screenHeight * 0.01),
-            Text(
+            const Text(
               "Order Placed Successfully",
               style: TextStyle(
                 color: Colors.black87,
@@ -63,21 +57,23 @@ class _SucessfullOrderState extends State<SucessfullOrder> {
             ),
             SizedBox(height: screenHeight * 0.05),
             TextButton(
-
               onPressed: () {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder:  (context) => const HomePage(),));
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const HomePage(),
+                    ));
               },
-              child :  Text("Click here to return to home page", style: TextStyle(
-                color: Colors.black54,
-                fontWeight: FontWeight.w400,
-                fontSize: 14,
-              ),),
-              
+              child: const Text(
+                "Click here to return to home page",
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                ),
+              ),
             ),
             SizedBox(height: screenHeight * 0.06),
-            // Flexible(
-            //   child: HomePage()
-            // ),
           ],
         ),
       ),

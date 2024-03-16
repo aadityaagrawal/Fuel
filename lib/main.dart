@@ -1,10 +1,7 @@
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:fuel/Screen/Orders/Booking_Screen.dart';
-import 'package:fuel/Screen/Orders/Order_Confirmed.dart';
 import 'package:fuel/Screen/User/Splash_Screen.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +17,7 @@ void main() async {
   await Firebase.initializeApp();
   runApp(const MyApp());
 }
-
+  
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
