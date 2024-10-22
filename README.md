@@ -21,17 +21,14 @@ import psycopg2
 import pandas as pd
 import os
 
-# Database connection parameters
 DB_NAME = "your_database_name"
 DB_USER = "your_username"
 DB_PASSWORD = "your_password"
-DB_HOST = "localhost"  # or your remote host
+DB_HOST = "localhost"
 DB_PORT = "5432"
 
-# Directory containing the CSV files
 csv_directory = "/path/to/csv/files"
 
-# Establish the connection
 conn = psycopg2.connect(
     dbname=DB_NAME,
     user=DB_USER,
@@ -41,12 +38,10 @@ conn = psycopg2.connect(
 )
 cursor = conn.cursor()
 
-# Function to copy CSV data to PostgreSQL
 def copy_csv_to_pg(csv_file, table_name):
-    # Load the CSV into a DataFrame
     df = pd.read_csv(csv_file)
+    df = df.where(pd.notnull(df), None)
     
-    # Create table structure (if not exists)
     columns = ", ".join([f"{col} TEXT" for col in df.columns])
     create_table_query = f"""
     CREATE TABLE IF NOT EXISTS {table_name} ({columns});
@@ -54,21 +49,18 @@ def copy_csv_to_pg(csv_file, table_name):
     cursor.execute(create_table_query)
     conn.commit()
 
-    # Write the DataFrame to PostgreSQL
     for i, row in df.iterrows():
         insert_query = f"INSERT INTO {table_name} VALUES ({', '.join(['%s'] * len(row))})"
         cursor.execute(insert_query, tuple(row))
     conn.commit()
 
-# Loop through all CSV files in the directory
 for filename in os.listdir(csv_directory):
     if filename.endswith(".csv"):
         csv_path = os.path.join(csv_directory, filename)
-        table_name = filename.replace(".csv", "")  # Name the table same as CSV filename
+        table_name = filename.replace(".csv", "")
         print(f"Copying {filename} to table {table_name}...")
         copy_csv_to_pg(csv_path, table_name)
 
-# Close the connection
 cursor.close()
 conn.close()
 
